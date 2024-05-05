@@ -13,26 +13,22 @@ start_date = end_date - timedelta(days=1)
 start_timestamp = int(start_date.timestamp())
 end_timestamp   = int(end_date.timestamp())
 
-# You can play with the parameters at the end by templating
-# Get 20 new posts off of given subreddit
-url = f"https://www.reddit.com/r/{subreddit}/search.json?q={search_term}&restrict_sr=1&sort=new&limit={limit}&after={start_timestamp}&before={end_timestamp}"
+url = f"https://www.reddit.com/r/{subreddit}/search.json"
 
-# params = {
-#     "q": search_term,
-#     "restrict_sr": 1,
-#     "sort": "new",
-#     "limit": limit,
-#     "after": start_timestamp,
-#     "before": end_timestamp
-# }
-
-# url = f"https://www.reddit.com/r/{subreddit}/search.json"
+params = {
+    "q": search_term,
+    "restrict_sr": 1,
+    "sort": "new",
+    "limit": limit,
+    "after": start_timestamp,
+    "before": end_timestamp
+}
 
 headers = {
     "User-Agent":  "pypocketwatcha"
 }
 
-response = requests.get(url, headers=headers)
+response = requests.get(url, headers=headers, params=params)
 
 if response.ok:
     data = response.json()["data"]
