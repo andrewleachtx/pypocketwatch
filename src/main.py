@@ -1,63 +1,99 @@
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 import pytz
+import sqlite3
 
-# Make work with multiple later.
-subreddit = "Watchexchange"
-search_term = "Seiko"
-limit = 1000
+def gen_table(conn):
+    cur = conn.cursor()
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS posts (
+            id TEXT PRIMARY KEY,
+            title TEXT,
+            author TEXT,
+            date REAL,
+            subreddit TEXT,
+            url TEXT,
+            score INTEGER
+        )
+        """
+    )
 
-# We should query only yesterday, today
-end_date = datetime.now()
-start_date = end_date - timedelta(days=1)
-start_timestamp = int(start_date.timestamp())
-end_timestamp   = int(end_date.timestamp())
+    conn.commit()
 
-url = f"https://www.reddit.com/r/{subreddit}/search.json"
+# We should just keep querying because we can't get all the posts at once.
+def parse(subreddit, after="", limit=1000, search_term="", conn=None):
+    url = f"https://www.reddit.com/r/{subreddit}/search.json"
 
-params = {
-    "q": search_term,
-    "restrict_sr": 1,
-    "sort": "new",
-    "limit": limit,
-    "after": start_timestamp,
-    "before": end_timestamp
-}
+    params = {
+        "q": search_term,
+        "restrict_sr": 1,
+        "sort": "new",
+        "limit": limit,
+        "t": "month",
+        "after": after
+    }
 
-headers = {
-    "User-Agent":  "pypocketwatcha"
-}
+    print(f"Searching for {search_term} in r/{subreddit} with after={after}, limit={limit}")
 
-response = requests.get(url, headers=headers, params=params)
+    headers = {
+        "User-Agent": "pypocketwatcha"
+    }
 
-if response.ok:
-    data = response.json()["data"]
+    response = requests.get(url, headers=headers, params=params)
 
-    for post in data["children"]:
-        post_data = post["data"]
+    if response.ok:
+        c = conn.cursor()
+        data = response.json()["data"]
 
-        post_id   = post_data["id"]
-        title     = post_data["title"]
-        score     = post_data["score"]
-        author    = post_data["author"]
-        date      = post_data["created_utc"]
-        url       = post_data.get("url_overridden_by_dest")
+        for post in data["children"]:
+            post_data = post["data"]
 
-        print(f"post_id = {post_id}")
-        print(f"title = {title}")
-        print(f"score = {score}")
-        print(f"author = {author}")
-        cdt_timezone = pytz.timezone("America/Chicago")
-        date = datetime.utcfromtimestamp(date)
-        date = cdt_timezone.localize(date)
-        print(f"date = {date}")
-        print(f"url = {url}")
-        print("-" * 20)
-else:
-    print(f"Request failed -- Error {response.status_code}")
+            post_id = post_data["id"]
+            title = post_data["title"]
+            score = post_data["score"]
+            author = post_data["author"]
+            date = post_data["created_utc"]
+            url_ow = post_data.get("url_overridden_by_dest")
+
+            date = datetime.utcfromtimestamp(date)
+            date = pytz.utc.localize(date).astimezone(pytz.timezone("America/Chicago"))
+            formatted_date = date.strftime("%Y-%m-%d %I:%M %p")
+
+            c.execute("INSERT INTO posts VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (post_id, title, author, formatted_date, subreddit, url_ow, score))
+
+        conn.commit()
+
+        # return back "after" so we can update params["after"] in the next request
+        return response.json()["data"]["after"]
+    else:
+        print(f"Request failed -- Error {response.status_code}")
+        return None
 
 def main():
-    pass
+    subreddits = ["Watchexchange", "watch_swap", "Watches", "Seiko"]
+
+    conn = sqlite3.connect("../resources/pypocketwatch.db")
+    gen_table(conn)
+
+    max_pages = 10
+
+    after = ""
+    for subreddit in subreddits:
+        for i in range(1, max_pages + 1):
+            try:
+                print(f"Parsing r/{subreddit} in the last <week>, page {i}")
+                after = parse(subreddit, after=after, search_term="Seiko", conn=conn)
+
+                if not after:
+                    print("No after")
+                    break
+            except KeyboardInterrupt:
+                print(f"Exiting on keyboard interrupt")
+                break
+
+    conn.close()
 
 if __name__ == "__main__":
     try:
