@@ -2,6 +2,7 @@ import requests
 from datetime import datetime
 import pytz
 import sqlite3
+import re
 
 def gen_table(conn):
     cur = conn.cursor()
@@ -21,6 +22,22 @@ def gen_table(conn):
 
     conn.commit()
 
+def filter_title(title: str) -> bool:
+    """
+        we are looking for unique identifiers like
+
+        starlight, scrp01, sary085
+    """
+
+    pattern = r"(?:starlight|scrp01|sary085)"
+
+    match = re.search(pattern, title, re.IGNORECASE)
+
+    return bool(match)
+
+# test_str = "Seiko Presage SARY085 Cocktail Time \"Starlight\""
+# print(filter_title(test_str))
+
 # We should just keep querying because we can't get all the posts at once.
 def parse(subreddit, after="", limit=1000, search_term="", conn=None):
     url = f"https://www.reddit.com/r/{subreddit}/search.json"
@@ -33,8 +50,6 @@ def parse(subreddit, after="", limit=1000, search_term="", conn=None):
         "t": "month",
         "after": after
     }
-
-    print(f"Searching for {search_term} in r/{subreddit} with after={after}, limit={limit}")
 
     headers = {
         "User-Agent": "pypocketwatcha"
@@ -50,7 +65,18 @@ def parse(subreddit, after="", limit=1000, search_term="", conn=None):
             post_data = post["data"]
 
             post_id = post_data["id"]
+            # before we do anything else check if the post already exists
+            c.execute("SELECT * FROM posts WHERE id=?", (post_id,))
+            if c.fetchone():
+                # print(f"Post {post_id} already exists, skipping")
+                continue
+
             title = post_data["title"]
+
+            # fine tuned filtering
+            if not filter_title(title):
+                continue
+
             score = post_data["score"]
             author = post_data["author"]
             date = post_data["created_utc"]
@@ -81,16 +107,22 @@ def main():
 
     after = ""
     for subreddit in subreddits:
+        print("-" * 50)
+        print(f"Parsing r/{subreddit} in the last <week> for max {max_pages} pages")
+
         for i in range(1, max_pages + 1):
             try:
-                print(f"Parsing r/{subreddit} in the last <week>, page {i}")
+                print(f"\tPage {i} of r/{subreddit} with after={after}")
                 after = parse(subreddit, after=after, search_term="Seiko", conn=conn)
 
                 if not after:
-                    print("No after")
+                    print(f"Ended parsing @ page {i}: No after token found")
                     break
             except KeyboardInterrupt:
                 print(f"Exiting on keyboard interrupt")
+                break
+            except Exception as e:
+                print(f"Error: {e}")
                 break
 
     conn.close()

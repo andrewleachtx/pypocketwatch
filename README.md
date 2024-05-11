@@ -1,7 +1,6 @@
 # pypocketwatch
 
-
-<img src="resources/seikostarlight.png" alt="The watch in question" width="300" style="border-radius: 25px">
+<img src="resources/seikostarlight.jpg" alt="The watch in question" width="400" style="border-radius: 25px">
 
 Looks through given subreddits on a routine basis and notifies you if anything notable happened.
 
@@ -18,6 +17,6 @@ In my case, what is notable is the [Seiko Presage "Starlight" SRPC01](https://ww
 
 YouTube, Python [requests](https://pypi.org/project/requests/), and a dream.
 
-I can interpret the data with [regex](https://docs.python.org/3/library/re.html) to see if it is what I am looking for. After finding something I wanted, I can use check for ${...} and find their price as well as other info about the post.
+I can interpret the data with [regex](https://docs.python.org/3/library/re.html) to see if it is what I am looking for. After finding something I want, I can use check for ${...} and find their price as well as other info about the post.
 
 I am using [sqlite3](https://docs.python.org/3/library/sqlite3.html) as a lightweight container for my results. I can also store the last date queried, so I don't overquery.
