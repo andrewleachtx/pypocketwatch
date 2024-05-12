@@ -33,15 +33,7 @@ def filterTitle(title: str) -> bool:
 
     match = re.search(pattern, title, re.IGNORECASE)
 
-    # if match:
-    #     print(f"Matched: {match}")
-
     return bool(match)
-
-# test_str = "Seiko Presage Cocktail \"\""
-# print(filterTitle(test_str))
-#
-# exit(0)
 
 # We should just keep querying because we can't get all the posts at once.
 def parse(subreddit, after="", limit=1000, search_term="", conn=None):
@@ -54,8 +46,9 @@ def parse(subreddit, after="", limit=1000, search_term="", conn=None):
         "after": after
     }
 
+    # <platform>:<app ID>:<version string> (by u/<username>)
     headers = {
-        "User-Agent": "pypocketwatcha"
+        "User-Agent": "python3:pypocketwatch (by /u/<username>)"
     }
 
     response = requests.get(url, headers=headers, params=params)
@@ -71,7 +64,6 @@ def parse(subreddit, after="", limit=1000, search_term="", conn=None):
             # before we do anything else check if the post already exists
             c.execute("SELECT * FROM posts WHERE id=?", (post_id,))
             if c.fetchone():
-                print(f"\tPost {post_id} already exists, skipping")
                 continue
 
             title = post_data["title"]
@@ -102,31 +94,35 @@ def parse(subreddit, after="", limit=1000, search_term="", conn=None):
 
 def main():
     subreddits = ["Watchexchange", "watch_swap", "Watches", "Seiko"]
+    searches   = ["seiko", "starlight", "seiko starlight", "scrp01"]
 
     conn = sqlite3.connect("../resources/pypocketwatch.db")
     genTable(conn)
 
-    max_pages = 100
+    max_pages = 15
 
-    after = ""
-    for subreddit in subreddits:
-        print("-" * 50)
-        print(f"Parsing r/{subreddit} in the last <week> for max {max_pages} pages")
+    # touch all bases
+    for search_term in searches:
+        for subreddit in subreddits:
+            print("-" * 50)
+            print(f"Parsing r/{subreddit} in the last <week> for max {max_pages} pages")
 
-        for i in range(1, max_pages + 1):
-            try:
-                print(f"\tPage {i} of r/{subreddit} with after={after}")
-                after = parse(subreddit, after=after, search_term="seiko", conn=conn)
+            after = ""
+            for i in range(1, max_pages + 1):
+                try:
+                    print(f"\tPage {i} of r/{subreddit} with after={after}")
+                    after = parse(subreddit, after=after, search_term=search_term, conn=conn)
 
-                if not after:
-                    print(f"Ended parsing @ page {i}: No after token found")
+                    if not after:
+                        print(f"Ended parsing @ page {i}: No after token found")
+                        break
+
+                except KeyboardInterrupt:
+                    print(f"Exiting on keyboard interrupt")
                     break
-            except KeyboardInterrupt:
-                print(f"Exiting on keyboard interrupt")
-                break
-            except Exception as e:
-                print(f"Error: {e}")
-                break
+                except Exception as e:
+                    print(f"Error: {e}")
+                    break
 
     conn.close()
 
