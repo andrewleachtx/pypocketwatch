@@ -4,7 +4,7 @@ import pytz
 import sqlite3
 import re
 
-def gen_table(conn):
+def genTable(conn):
     cur = conn.cursor()
     cur.execute(
         """
@@ -22,21 +22,26 @@ def gen_table(conn):
 
     conn.commit()
 
-def filter_title(title: str) -> bool:
+def filterTitle(title: str) -> bool:
     """
         we are looking for unique identifiers like
 
         starlight, scrp01, sary085
     """
 
-    pattern = r"(?:starlight|scrp01|sary085)"
+    pattern = r"(?:starlight|scrp01|sary085|cocktail|cocktail time)"
 
     match = re.search(pattern, title, re.IGNORECASE)
 
+    # if match:
+    #     print(f"Matched: {match}")
+
     return bool(match)
 
-# test_str = "Seiko Presage SARY085 Cocktail Time \"Starlight\""
-# print(filter_title(test_str))
+# test_str = "Seiko Presage Cocktail \"\""
+# print(filterTitle(test_str))
+#
+# exit(0)
 
 # We should just keep querying because we can't get all the posts at once.
 def parse(subreddit, after="", limit=1000, search_term="", conn=None):
@@ -46,8 +51,6 @@ def parse(subreddit, after="", limit=1000, search_term="", conn=None):
         "q": search_term,
         "restrict_sr": 1,
         "sort": "new",
-        "limit": limit,
-        "t": "month",
         "after": after
     }
 
@@ -68,13 +71,13 @@ def parse(subreddit, after="", limit=1000, search_term="", conn=None):
             # before we do anything else check if the post already exists
             c.execute("SELECT * FROM posts WHERE id=?", (post_id,))
             if c.fetchone():
-                # print(f"Post {post_id} already exists, skipping")
+                print(f"\tPost {post_id} already exists, skipping")
                 continue
 
             title = post_data["title"]
 
             # fine tuned filtering
-            if not filter_title(title):
+            if not filterTitle(title):
                 continue
 
             score = post_data["score"]
@@ -94,16 +97,16 @@ def parse(subreddit, after="", limit=1000, search_term="", conn=None):
         # return back "after" so we can update params["after"] in the next request
         return response.json()["data"]["after"]
     else:
-        print(f"Request failed -- Error {response.status_code}")
+        print(f"Request failed - Error {response.status_code}")
         return None
 
 def main():
     subreddits = ["Watchexchange", "watch_swap", "Watches", "Seiko"]
 
     conn = sqlite3.connect("../resources/pypocketwatch.db")
-    gen_table(conn)
+    genTable(conn)
 
-    max_pages = 10
+    max_pages = 100
 
     after = ""
     for subreddit in subreddits:
@@ -113,7 +116,7 @@ def main():
         for i in range(1, max_pages + 1):
             try:
                 print(f"\tPage {i} of r/{subreddit} with after={after}")
-                after = parse(subreddit, after=after, search_term="Seiko", conn=conn)
+                after = parse(subreddit, after=after, search_term="seiko", conn=conn)
 
                 if not after:
                     print(f"Ended parsing @ page {i}: No after token found")
