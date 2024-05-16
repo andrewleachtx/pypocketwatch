@@ -1,8 +1,16 @@
+#!/usr/bin/env python3
 import requests
 from datetime import datetime
 import pytz
 import sqlite3
 import re
+import os
+import logging
+
+cur_directory = os.path.dirname(os.path.abspath(__file__))
+logs_dir       = os.path.join(cur_directory, "../logs/")
+resources_dir  = os.path.join(cur_directory, "../resources/")
+
 
 def genTable(conn):
     cur = conn.cursor()
@@ -96,7 +104,7 @@ def main():
     subreddits = ["Watchexchange", "watch_swap", "Watches", "Seiko"]
     searches   = ["seiko", "starlight", "seiko starlight", "scrp01"]
 
-    conn = sqlite3.connect("../resources/pypocketwatch.db")
+    conn = sqlite3.connect(f"{resources_dir}/pypocketwatch.db")
     genTable(conn)
 
     max_pages = 15
@@ -118,7 +126,6 @@ def main():
                         break
 
                 except KeyboardInterrupt:
-                    print(f"Exiting on keyboard interrupt")
                     break
                 except Exception as e:
                     print(f"Error: {e}")
@@ -128,6 +135,10 @@ def main():
 
 if __name__ == "__main__":
     try:
+        logging.basicConfig(filename=f"{logs_dir}/main.log", level=logging.INFO)
+
+        logging.info(f"Script started @ {datetime.now()}")
         main()
+        logging.info(f"Script ended @ {datetime.now()}")
     except KeyboardInterrupt:
-        print(f"Exiting")
+        print(f"Exiting on keyboard interrupt")
