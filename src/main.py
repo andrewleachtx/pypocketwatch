@@ -11,7 +11,6 @@ cur_directory = os.path.dirname(os.path.abspath(__file__))
 logs_dir       = os.path.join(cur_directory, "../logs/")
 resources_dir  = os.path.join(cur_directory, "../resources/")
 
-
 def genTable(conn):
     cur = conn.cursor()
     cur.execute(
