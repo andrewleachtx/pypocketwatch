@@ -1,4 +1,5 @@
-# pypocketwatch
+# pypocketwatch,
+## May 2024
 
 <img src="resources/seikostarlight.jpg" alt="The watch in question" width="400" style="border-radius: 25px">
 
