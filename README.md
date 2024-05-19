@@ -1,4 +1,4 @@
-# pypocketwatch,
+# pypocketwatch
 ## May 2024
 A pulse monitor running on RPI4 (Watson) to scrape, filter, and report any and all noise on Reddit relating to the sale of the Seiko SARY085, my favorite watch.
 
