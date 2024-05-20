@@ -54,10 +54,23 @@ I knew there'd be a daemon or system task scheduler, and google yielded [crontab
 
 It updates a local database, which is good enough for me. I can check it every day (sorting rows by date) with ease. Later on I'll probably add a connection or means of emailing me if it finds something.
 
+## Reaching Out (Notifications)
+I looked online for emails, sms, etc... and found an app with simple push notifications called [Pushover](https://pushover.net/) which is like, $4.99 for life (I've had the same like $11 in my account since I was 11 or something) and a free 30-day trial.
+
+If you look in src/main.py you will notice the use of a .env file which stores information specific to me that I felt wouldn't be the smartest to put in a public repo.
+
+You can probably deduce what everything does. Basically, I make a POST request to the Pushover API with my info, and it will handle everything for me. Most of my work was getting a good message set up.
+
+## Price Points
+TBD?
+
 ## Up Next
-- [ ] Make it reach out to me if something happens, so I don't even have to check.
+- [x] ~~Make it reach out to me if something happens, so I don't even have to check.~~ [done](#reaching-out-notifications)
+- [ ] Add more columns or additional parsing to store price point if it is ACTUALLY the watch.
 - [ ] Wait... I did all this - but I'm still broke...
 - [ ] Get money (hire me?)
+
+
 
 ## Technologies I Used
 - Python
@@ -73,5 +86,7 @@ It updates a local database, which is good enough for me. I can check it every d
 - The Internet
   - [Reddit API](https://www.reddit.com/dev/api/)
   - [YouTube](https://www.youtube.com/)
-  - [tutorial / wireframe for parsing reddit](https://www.youtube.com/watch?v=Se3GEUY3AGI)
-  - [This guys rpi cheatsheet](https://github.com/LukaszLapaj/raspberry-pi-cheat-sheet)
+  - [Tutorial / wireframe for parsing reddit](https://www.youtube.com/watch?v=Se3GEUY3AGI)
+  - [This guy's rpi cheatsheet](https://github.com/LukaszLapaj/raspberry-pi-cheat-sheet)
+  - [.env refresher for Python](https://www.geeksforgeeks.org/how-to-create-and-use-env-files-in-python/)
+  - [Push notification API](https://pushover.net/api#priority)
