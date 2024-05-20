@@ -6,6 +6,7 @@ import sqlite3
 import re
 import os
 import logging
+from http import HTTPStatus
 
 # directories relative to filesystem so users outside of workspace can accurately run script
 cur_directory  = os.path.dirname(os.path.abspath(__file__))
@@ -101,6 +102,8 @@ def parse(subreddit, after="", limit=1000, search_term="", conn=None):
 
         # return back "after" so we can update params["after"] in the next request
         return response.json()["data"]["after"]
+    elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+        logging.warning(f"Request failed due to {response.status_code}, too many requests being sent")
     else:
         print(f"Request failed - Error {response.status_code}")
         return None
@@ -142,7 +145,6 @@ if __name__ == "__main__":
     try:
         logging.basicConfig(filename=f"{logs_dir}/main.log", level=logging.INFO)
 
-        logging.info("-" * 20)
         start = datetime.now()
         logging.info(f"Script starting @ {start.strftime('%B %d, %Y %I:%M %p')}")
 
