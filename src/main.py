@@ -7,9 +7,13 @@ import re
 import os
 import logging
 
-cur_directory = os.path.dirname(os.path.abspath(__file__))
+# directories relative to filesystem so users outside of workspace can accurately run script
+cur_directory  = os.path.dirname(os.path.abspath(__file__))
 logs_dir       = os.path.join(cur_directory, "../logs/")
 resources_dir  = os.path.join(cur_directory, "../resources/")
+
+# for this iteration of the script
+new_entries = 0
 
 def genTable(conn):
     cur = conn.cursor()
@@ -79,6 +83,8 @@ def parse(subreddit, after="", limit=1000, search_term="", conn=None):
             if not filterTitle(title):
                 continue
 
+            new_entries += 1
+
             score = post_data["score"]
             author = post_data["author"]
             date = post_data["created_utc"]
@@ -136,8 +142,15 @@ if __name__ == "__main__":
     try:
         logging.basicConfig(filename=f"{logs_dir}/main.log", level=logging.INFO)
 
-        logging.info(f"Script started @ {datetime.now()}")
+        logging.info("-" * 20)
+        start = datetime.now()
+        logging.info(f"Script starting @ {start.strftime('%B %d, %Y %I:%M %p')}")
+
         main()
-        logging.info(f"Script ended @ {datetime.now()}")
+
+        end = datetime.now()
+        logging.info(f"\t{new_entries} new entries found, took {(end - start)}")
+        logging.info(f"Script ended @ {end.strftime('%B %d, %Y %I:%M %p')}")
+
     except KeyboardInterrupt:
         print(f"Exiting on keyboard interrupt")
