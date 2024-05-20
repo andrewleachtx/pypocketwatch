@@ -39,9 +39,9 @@ def sendNotification(message):
     response = requests.post(PUSHOVER_URL, data=params)
 
     if response.ok:
-        logging.log(logging.INFO, f"Push succeeded: {message}")
+        logging.log(logging.INFO, f"Push noti successfully sent")
     else:
-        logging.log(logging.WARNING, f"Push failed: {message}")
+        logging.log(logging.WARNING, f"Push noti failed")
 
     return response.ok == True
 
