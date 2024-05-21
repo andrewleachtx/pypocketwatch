@@ -1,14 +1,16 @@
 # pypocketwatch
 ## May 2024
-A pulse monitor running on RPI4 (Watson) to scrape, filter, and report any and all noise on Reddit relating to the sale of the Seiko SARY085, my favorite watch.
+A pulse monitor running on RPI4 (Watson) to scrape, filter, and report any and all noise on Reddit relating to the sale of the Seiko SARY085/SRPC01J1, my favorite watch.
 
-<img src="resources/seikostarlight.jpg" alt="The watch in question" width="400" style="border-radius: 25px">
+<img src="resources/seikostarlight.png" alt="The watch in question" width="400" style="border-radius: 25px">
 
 Checks subreddits on a routine basis and tells you if it found anything _notable_.
 
 I don't use the site and I definitely don't want to do a routine search daily. Simply put, if a ~~robot~~ [Watson](#automation) does it for me I can spend more time playing TOTK, TTYD Remake (soon), or Lego Star Wars. I have no idea how all my favorite games are being remade, but life is good.
 
 In my case, what is _notable_ is the [Seiko Presage "Starlight" SRPC01](https://www.watchgecko.com/blogs/magazine/thoughts-on-the-seiko-presage-cocktail-time-starlight). Never been a big watch guy, but after seeing this, now a big watch guy.
+
+There is a [version](https://www.chrono24.com/seiko/seiko-presage-cocktail-limited-edition-ssa361j1-ssa361-blue-starlight-automatic--id33209726.htm) with many more complications, which is the Seiko SSA361J1.
 
 ## Cool Pictures
 Yea, probably shouldn't upload a bunch of images to the repo itself, but I don't care.
